@@ -11,12 +11,3 @@ node_modules/
 .env
 .env.*
 !.env.example
-
-# AI tooling
-.claude/
-plan.md
-CLAUDE.md
-.cursor/
-.windsurf/
-.cursorrules
-.github/copilot-instructions.md
