@@ -16,7 +16,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: process.env.BASE_URL ?? 'https://www.saucedemo.com/',
+    baseURL: process.env.BASE_URL || 'https://www.saucedemo.com/',
     /* retain-on-failure: не плодим трейсы на зелёных прогонах, но при падении
        есть полный трейс для разбора */
     trace: 'retain-on-failure',

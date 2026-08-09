@@ -26,9 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BASE_URL: ${{ vars.BASE_URL }}
-      E2E_USERNAME: ${{ vars.E2E_USERNAME }}
-      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
-      LOCKED_USERNAME: ${{ vars.LOCKED_USERNAME }}
+      STANDARD_USER_USERNAME: ${{ vars.STANDARD_USER_USERNAME }}
+      STANDARD_USER_PASSWORD: ${{ secrets.STANDARD_USER_PASSWORD }}
+      LOCKED_OUT_USER_USERNAME: ${{ vars.LOCKED_OUT_USER_USERNAME }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
