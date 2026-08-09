@@ -1,8 +1,5 @@
 import { Locator, Page } from '@playwright/test';
 
-/**
- * Карточка товара на inventory-странице, повторяется многократно на одной странице.
- */
 export class ProductItemComponent {
   readonly price: Locator;
   private readonly addToCartButton: Locator;

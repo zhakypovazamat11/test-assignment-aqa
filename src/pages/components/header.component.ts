@@ -1,8 +1,5 @@
 import { Locator, Page } from '@playwright/test';
 
-/**
- * Шапка сайта (бургер-меню + корзина), встречается на inventory/cart/checkout-*.
- */
 export class HeaderComponent {
   readonly cartLink: Locator;
   readonly cartBadge: Locator;
