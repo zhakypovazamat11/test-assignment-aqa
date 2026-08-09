@@ -1,56 +1,28 @@
-# E2E-тесты для saucedemo.com
+# Saucedemo.com E2E Tests
 
-Playwright + TypeScript, Page Object Model + Component Object.
+## Task description
+На примере любого сайта необходимо
+1. Настроить проект с нуля
+Playwright + TypeScript, чистая структура репозитория.
+Конфигурация под несколько окружений через переменные (BASE_URL и т.п.).
+2. Реализовать архитектуру
+Page Object Model + выделить хотя бы 1–2 переиспользуемых компонента (Component Object) — например, шапка сайта с поиском/корзиной, которая встречается на разных страницах.
+3. Покрыть сценарии тестами
+Позитивный E2E-флоу: регистрация/логин → добавление товара в корзину → оформление заказа.
+Негативный сценарий: попытка логина с неверными данными / валидация формы — проверка корректной обработки ошибки.
+5. Документация
+README NOTE: как запустить, какие решения приняты и почему, какие есть ограничения/что не успели.
 
-Сайт: [https://www.saucedemo.com/](https://www.saucedemo.com/) — учебный
-демо-магазин от Sauce Labs. Выбран потому что стабилен, не имеет внешних
-редиректов на реальные платёжные шлюзы и содержит готовый набор тестовых
-пользователей (включая `locked_out_user` для негативного сценария).
+## Technical Stack
 
-Покрытый флоу: логин → добавление товаров в корзину → оформление заказа
-(позитивный сценарий), плюс проверка обработки ошибок логина (негативные
-сценарии).
+Playwright + TypeScript
 
-## Установка и запуск
-
-```bash
-npm install
-npx playwright install chromium   # если браузер ещё не установлен
-cp .env.example .env               # при необходимости поменять значения
-npm test                           # прогон всех тестов (headless)
-npm run test:headed                # с видимым браузером
-npm run test:ui                    # Playwright UI mode
-npm run lint                       # ESLint
-npm run typecheck                  # tsc --noEmit
-```
-
-Отчёт после прогона: `npx playwright show-report`.
-
-### Переменные окружения
-
-Задаются в `.env` (см. `.env.example`), не хардкодятся в коде/тестах:
-
-| Переменная         | Назначение                                   |
-| ------------------ | --------------------------------------------- |
-| `BASE_URL`                | базовый URL приложения под тест              |
-| `STANDARD_USER_USERNAME`  | валидный пользователь для позитивного флоу   |
-| `STANDARD_USER_PASSWORD`  | пароль валидного пользователя                |
-| `LOCKED_OUT_USER_USERNAME`| заблокированный пользователь для негатива    |
-
-Для переключения окружений — переменная `ENV_FILE`, например:
-
-```bash
-ENV_FILE=.env.staging npx playwright test
-```
-
-По умолчанию используется `.env`.
-
-## Архитектура
+## Project Structure
 
 ```
 src/
   pages/
-    base.page.ts                 # общий контракт: openPage(), verifyPageIsOpened()
+    base.page.ts                 # shared contract: openPage(), verifyPageIsOpened()
     login.page.ts                 # "/"
     inventory.page.ts             # "/inventory.html"
     cart.page.ts                  # "/cart.html"
@@ -58,65 +30,119 @@ src/
     checkout-step-two.page.ts     # "/checkout-step-two.html"
     checkout-complete.page.ts     # "/checkout-complete.html"
     components/
-      header.component.ts         # бургер-меню + корзина — на inventory/cart/checkout-*
-      product-item.component.ts   # карточка товара на inventory, повторяется N раз
+      header.component.ts         # burger menu + cart — on inventory/cart/checkout-*
+      product-item.component.ts   # product card on inventory, repeats N times
   fixtures/
-    pages.fixtures.ts             # инъекция page-объектов и credentials из env в тесты
+    pages.fixtures.ts             # injects page objects into tests
+    userSteps/
+      userSession.fixture.ts      # authorizedUser: logs in and yields InventoryPage
   test-data/
-    checkout-info.ts              # генератор случайных данных для формы checkout
+    checkout-info.ts              # random data generator for the checkout form
 tests/
-  purchase-flow.spec.ts           # позитивный E2E
-  login-negative.spec.ts          # негативные сценарии логина
+  purchase-flow.spec.ts           # positive E2E flow
+  login-negative.spec.ts          # negative login scenarios
 ```
 
-- **`BasePage`** — абстрактный класс: страница открывается через `openPage()`,
-  а `verifyPageIsOpened()` проверяет URL и видимость "якорного" локатора.
-  Все POM-классы наследуются от него.
-- **`HeaderComponent`** — компонент шапки (бургер-меню с Logout + иконка/бейдж
-  корзины), встречается на нескольких разных страницах. Это и есть
-  Component Object №1 из задания.
-- **`ProductItemComponent`** — карточка товара, параметризуется названием
-  (`page.locator('.inventory_item', { hasText: name })`). Показывает паттерн
-  компонента, который повторяется многократно на одной странице, а не
-  только между страницами — Component Object №2.
-- **`fixtures/pages.fixtures.ts`** — единая точка, которая создаёт
-  page-объекты и передаёт креды из `process.env`, чтобы тесты не обращались
-  к `process.env` напрямую.
+- **`BasePage`** — an abstract class: a page is opened via `openPage()`, and
+  `verifyPageIsOpened()` checks the URL and the visibility of an "anchor"
+  locator. All POM classes extend it.
+- **`HeaderComponent`** — the header component (burger menu with Logout +
+  cart icon/badge), present on several different pages. This is Component
+  Object #1 from the task.
+- **`ProductItemComponent`** — a product card, parameterized by name
+  (`page.locator('.inventory_item', { hasText: name })`). Demonstrates a
+  component pattern that repeats many times on a single page, not just
+  across pages — Component Object #2.
+- **`fixtures/pages.fixtures.ts`** — a single place that creates and injects
+  all page objects into tests.
+- **`fixtures/userSteps/userSession.fixture.ts`** — a higher-level
+  `authorizedUser` fixture built on top of `pages.fixtures.ts`: it logs in
+  with the standard user (credentials read from `process.env`) and yields
+  an already-authenticated `InventoryPage`, so tests that don't cover the
+  login flow itself (e.g. `purchase-flow.spec.ts`) can skip repeating the
+  login steps.
 
-Локаторы взяты из реального DOM сайта (запускал браузер и снимал разметку) —
-почти все интерактивные элементы на saucedemo.com имеют атрибут `data-test`.
-В `playwright.config.ts` он задан как `testIdAttribute: 'data-test'`, поэтому
-везде используется `page.getByTestId(...)` вместо `page.locator('[data-test="..."]')`.
+Locators were taken from the site's actual DOM (inspected in a real browser)
+— almost all interactive elements on saucedemo.com have a `data-test`
+attribute. `playwright.config.ts` sets `testIdAttribute: 'data-test'`, so
+`page.getByTestId(...)` is used everywhere instead of
+`page.locator('[data-test="..."]')`.
 
-## Тестовые сценарии
+## Install
 
-### Позитивный: `purchase-flow.spec.ts`
+```bash
+npm install
+npx playwright install chromium   # if the browser isn't installed yet
+cp .env.example .env              # adjust values if needed
+```
 
-Логин → добавление 2 товаров в корзину (с проверкой бейджа корзины в
-`HeaderComponent`) → переход в корзину → checkout (шаги 1 и 2 с проверкой
-summary) → страница подтверждения заказа.
+### Environment Variables
 
-### Негативный: `login-negative.spec.ts`
+Set in `.env` (see `.env.example`), never hardcoded in code/tests:
 
-- неверный пароль
-- заблокированный пользователь (`locked_out_user`)
-- пустой username / пустой password
-- сообщение об ошибке можно закрыть по крестику
+| Variable                     | Purpose                                    |
+| ----------------------------- | ------------------------------------------- |
+| `BASE_URL`                    | base URL of the application under test     |
+| `STANDARD_USER_USERNAME`      | valid user for the positive flow           |
+| `STANDARD_USER_PASSWORD`      | password of the valid user                 |
+| `LOCKED_OUT_USER_USERNAME`    | locked-out user for the negative scenario  |
 
-Во всех случаях также проверяется, что логин не произошёл (URL остался на `/`).
+To switch environments, use the `ENV_FILE` variable, e.g.:
 
-## Принятые решения
+```bash
+ENV_FILE=.env.staging npx playwright test
+```
 
-- **`trace: 'retain-on-failure'`** вместо `'on'` — трейсы сохраняются только
-  для упавших тестов, чтобы не плодить артефакты на зелёных прогонах, но при
-  падении есть весь трейс для разбора.
-- **Только chromium** активен в конфиге (firefox/webkit закомментированы) —
-  кросс-браузерность не требуется заданием, но паттерн включения показан.
-- **Креды и `BASE_URL` — только через env**, не хардкодятся в тестах/POM,
-  чтобы конфигурация под разные окружения не требовала правки кода.
-- **`@faker-js/faker`** для генерации данных формы checkout
-  (`test-data/checkout-info.ts`) — по аналогии с текущим проектом, вместо
-  захардкоженных значений.
-- **CI (`.github/workflows/playwright.yml`)** — два джоба, `lint` (ESLint +
-  `tsc --noEmit`) и зависящий от него `test` (Playwright против chromium),
-  с загрузкой HTML-отчёта как артефакта.
+`.env` is used by default.
+
+## Run Tests
+
+```bash
+npm test               # run all tests (headless)
+npm run test:headed    # with a visible browser
+npm run test:ui        # Playwright UI mode
+```
+
+View the report after a run: `npx playwright show-report`.
+
+## Lint & Format
+
+```bash
+npm run lint       # ESLint
+npm run typecheck  # tsc --noEmit
+```
+
+## What Is Covered
+
+### Positive: `purchase-flow.spec.ts`
+
+Login → add 2 products to the cart (with a cart badge check in
+`HeaderComponent`) → go to cart → checkout (steps 1 and 2 with a summary
+check) → order confirmation page.
+
+### Negative: `login-negative.spec.ts`
+
+- invalid password
+- locked-out user (`locked_out_user`)
+- empty username / empty password
+- error message can be dismissed via the close button
+
+In every case it's also verified that login did not happen (the URL stays on `/`).
+
+## Design Decisions
+
+- **`trace: 'retain-on-failure'`** instead of `'on'` — traces are kept only
+  for failed tests, avoiding artifact bloat on green runs while still
+  keeping a full trace to debug failures.
+- **Only chromium** is enabled in the config (firefox/webkit are commented
+  out) — cross-browser coverage isn't required by the task, but the pattern
+  for enabling it is shown.
+- **Credentials and `BASE_URL` are env-only**, never hardcoded in
+  tests/POMs, so configuring different environments doesn't require code
+  changes.
+- **`@faker-js/faker`** is used to generate checkout form data
+  (`test-data/checkout-info.ts`), following the reference project's
+  approach, instead of hardcoded values.
+- **CI (`.github/workflows/playwright.yml`)** — two jobs: `lint` (ESLint +
+  `tsc --noEmit`) and a dependent `test` job (Playwright against chromium),
+  which uploads the HTML report as an artifact.
