@@ -4,10 +4,10 @@ import { BasePage } from './base.page';
 export class CheckoutStepOnePage extends BasePage {
   protected readonly pageUrl = '/checkout-step-one.html';
 
-  readonly firstNameInput: Locator = this.page.getByTestId('firstName');
-  readonly lastNameInput: Locator = this.page.getByTestId('lastName');
-  readonly postalCodeInput: Locator = this.page.getByTestId('postalCode');
-  readonly continueButton: Locator = this.page.getByTestId('continue');
+  private readonly firstNameInput: Locator = this.page.getByTestId('firstName');
+  private readonly lastNameInput: Locator = this.page.getByTestId('lastName');
+  private readonly postalCodeInput: Locator = this.page.getByTestId('postalCode');
+  private readonly continueButton: Locator = this.page.getByTestId('continue');
 
   protected readonly readyLocator: Locator = this.continueButton;
 

@@ -16,4 +16,12 @@ export abstract class BasePage {
     await expect(this.page).toHaveURL(new RegExp(`${escapedUrl}$`));
     await expect(this.readyLocator).toBeVisible();
   }
+
+  protected async expectVisible(locator: Locator): Promise<void> {
+    await expect(locator).toBeVisible();
+  }
+
+  protected async expectText(locator: Locator, expectedText: string): Promise<void> {
+    await expect(locator).toHaveText(expectedText);
+  }
 }

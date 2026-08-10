@@ -7,7 +7,7 @@ import { ProductItemComponent } from './components/product-item.component';
 export class InventoryPage extends BasePage {
   protected readonly pageUrl = '/inventory.html';
 
-  readonly title: Locator = this.page.getByTestId('title');
+  private readonly title: Locator = this.page.getByTestId('title');
   readonly header: HeaderComponent = new HeaderComponent(this.page);
 
   protected readonly readyLocator: Locator = this.title;

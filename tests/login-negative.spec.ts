@@ -1,8 +1,9 @@
-import { test, expect } from '../src/fixtures/pages.fixtures';
-
-const STANDARD_USER_USERNAME = process.env.STANDARD_USER_USERNAME;
-const STANDARD_USER_PASSWORD = process.env.STANDARD_USER_PASSWORD;
-const LOCKED_OUT_USER_USERNAME = process.env.LOCKED_OUT_USER_USERNAME;
+import { test } from '../src/fixtures/pages.fixtures';
+import {
+  STANDARD_USER_USERNAME,
+  STANDARD_USER_PASSWORD,
+  LOCKED_OUT_USER_USERNAME,
+} from '../src/config/required-env-vars';
 
 const WRONG_PASSWORD = 'wrong_password';
 
@@ -23,47 +24,47 @@ type LoginCase = {
 const LOGIN_CASES: LoginCase[] = [
   {
     name: 'invalid password',
-    username: STANDARD_USER_USERNAME!,
+    username: STANDARD_USER_USERNAME,
     password: WRONG_PASSWORD,
     expectedError: ERROR_MESSAGES.invalidCredentials,
   },
   {
     name: 'locked out user',
-    username: LOCKED_OUT_USER_USERNAME!,
-    password: STANDARD_USER_PASSWORD!,
+    username: LOCKED_OUT_USER_USERNAME,
+    password: STANDARD_USER_PASSWORD,
     expectedError: ERROR_MESSAGES.lockedOutUser,
   },
   {
     name: 'empty username',
     username: '',
-    password: STANDARD_USER_PASSWORD!,
+    password: STANDARD_USER_PASSWORD,
     expectedError: ERROR_MESSAGES.usernameRequired,
   },
   {
     name: 'empty password',
-    username: STANDARD_USER_USERNAME!,
+    username: STANDARD_USER_USERNAME,
     password: '',
     expectedError: ERROR_MESSAGES.passwordRequired,
   },
 ];
 
 test.describe('Login negative scenarios', () => {
-  LOGIN_CASES.forEach(({ name, username, password, expectedError }) => {
+  for (const { name, username, password, expectedError } of LOGIN_CASES) {
     test(`shows error: ${name}`, async ({ loginPage }) => {
       await loginPage.openPage();
       await loginPage.login(username, password);
 
-      await expect(loginPage.errorMessage).toHaveText(expectedError);
       await loginPage.verifyPageIsOpened();
+      await loginPage.verifyErrorMessage(expectedError);
     });
-  });
+  }
 
   test('error message can be dismissed', async ({ loginPage }) => {
     await loginPage.openPage();
-    await loginPage.login(STANDARD_USER_USERNAME!, WRONG_PASSWORD);
+    await loginPage.login(STANDARD_USER_USERNAME, WRONG_PASSWORD);
 
-    await expect(loginPage.errorMessage).toBeVisible();
+    await loginPage.verifyErrorVisible();
     await loginPage.closeError();
-    await expect(loginPage.errorMessage).toBeHidden();
+    await loginPage.verifyErrorHidden();
   });
 });

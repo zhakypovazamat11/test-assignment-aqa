@@ -1,4 +1,4 @@
-import { test, expect } from '../src/fixtures/userSteps/userSession.fixture';
+import { test } from '../src/fixtures/userSteps/userSession.fixture';
 import { generateCheckoutInfo } from '../src/test-data/checkout-info';
 
 const ORDER_CONFIRMATION_MESSAGE = 'Thank you for your order!';
@@ -17,7 +17,7 @@ test.describe('Purchase flow', () => {
     await test.step('Add products to cart', async () => {
       for (const [index, name] of PRODUCTS.entries()) {
         await inventoryPage.product(name).addToCart();
-        await expect(inventoryPage.header.cartBadge).toHaveText(String(index + 1));
+        await inventoryPage.header.verifyCartBadgeCount(index + 1);
       }
     });
 
@@ -25,7 +25,7 @@ test.describe('Purchase flow', () => {
       await inventoryPage.header.openCart();
       await cartPage.verifyPageIsOpened();
       for (const name of PRODUCTS) {
-        await expect(cartPage.cartItemNames.filter({ hasText: name })).toBeVisible();
+        await cartPage.verifyProductPresent(name);
       }
     });
 
@@ -44,12 +44,15 @@ test.describe('Purchase flow', () => {
 
     await test.step('Complete the order', async () => {
       await checkoutStepTwoPage.verifyPageIsOpened();
-      await expect(checkoutStepTwoPage.totalLabel).toBeVisible();
+      for (const name of PRODUCTS) {
+        await checkoutStepTwoPage.verifyProductPresent(name);
+      }
+      await checkoutStepTwoPage.verifyOrderTotalsAreConsistent();
       await checkoutStepTwoPage.finish();
 
       await checkoutCompletePage.verifyPageIsOpened();
-      await expect(checkoutCompletePage.completeHeader).toHaveText(ORDER_CONFIRMATION_MESSAGE);
-      await expect(inventoryPage.header.cartBadge).toBeHidden();
+      await checkoutCompletePage.verifyConfirmationMessage(ORDER_CONFIRMATION_MESSAGE);
+      await inventoryPage.header.verifyCartBadgeHidden();
     });
   });
 });

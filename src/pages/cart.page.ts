@@ -6,12 +6,16 @@ export class CartPage extends BasePage {
   protected readonly pageUrl = '/cart.html';
 
   readonly header: HeaderComponent = new HeaderComponent(this.page);
-  readonly checkoutButton: Locator = this.page.getByTestId('checkout');
-  readonly cartItemNames: Locator = this.page.getByTestId('inventory-item-name');
+  private readonly checkoutButton: Locator = this.page.getByTestId('checkout');
+  private readonly cartItemNames: Locator = this.page.getByTestId('inventory-item-name');
 
   protected readonly readyLocator: Locator = this.checkoutButton;
 
   async checkout(): Promise<void> {
     await this.checkoutButton.click();
+  }
+
+  async verifyProductPresent(name: string): Promise<void> {
+    await this.expectVisible(this.cartItemNames.filter({ hasText: name }));
   }
 }
